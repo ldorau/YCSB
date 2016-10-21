@@ -18,13 +18,26 @@
 package com.yahoo.ycsb;
 
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
+import java.io.Reader;
+import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -1027,6 +1040,7 @@ public class Client
     //run the workload
 
     System.err.println("Starting test.");
+    synchronize();
     final CountDownLatch completeLatch = new CountDownLatch(threadcount);
     final List<ClientThread> clients = new ArrayList<ClientThread>(threadcount);
 
@@ -1184,4 +1198,87 @@ public class Client
 
     System.exit(0);
   }
+
+private static void synchronize() {
+	RandomAccessFile file = null; // The file we'll lock
+	FileChannel f = null; // The channel to the file
+    FileLock lock = null; // The lock object we hold
+    ByteBuffer dst = ByteBuffer.allocate(1);
+	int num =0,val=0;
+    byte[] tmp = new byte[1];
+    String name = new String("/var/lock/ycsb");
+    FileChannel fileChannel;
+	//Read and decrement value in lock file
+    try{
+		
+		try { // The finally clause closes the channel and releases the lock
+			File lockfile = new File(name);
+			file = new RandomAccessFile(lockfile, "rw");
+		    f = file.getChannel();
+		    lock = f.tryLock();
+		    while(lock==null){
+		    	try{
+		    		Thread.sleep(100);
+		    	}
+		    	catch(InterruptedException ex)
+		    	{}
+		    	System.err.println("Didn't get a lock. Sleeping...");
+		    	lock = f.tryLock();		    	
+		    }
+
+		    if (lock != null) {
+		        //Read value in file
+		    	num = f.read(dst);
+		        dst.flip();	
+		        dst.get(tmp);
+		        val = tmp[0];
+		    //    System.err.println("Value read="+(char)(tmp[0] + 0x30));		        
+		        dst.flip();		    
+		        //Decrement value and write to file
+		        dst.put((byte)(val-1));
+		        dst.flip();	
+		        f.position(0);
+		        num = f.write(dst);
+		        f.force(false);		        
+		      }
+		}
+		catch (IOException e) {
+	    
+		}finally {
+	    if (lock != null && lock.isValid())
+	      lock.release();
+	    if (file != null)
+	    {
+	    	file.close();
+	    }
+	  }
+    }catch (IOException e) {}
+    
+    //Read value in file, wait until it is "0"
+    Path path = Paths.get(name);
+    
+    dst.flip();	
+    do{
+    	try{
+    		fileChannel = FileChannel.open(path);        
+		    num = fileChannel.read(dst);	    
+		    dst.flip();	
+		    dst.get(tmp);
+		    val = tmp[0];
+		    fileChannel.position(0);
+		//    System.err.println("Value read2 ="+(char)(tmp[0] + 0x30));
+		    /*try{
+	    		Thread.sleep(10);
+	    	}
+	    	catch(InterruptedException ex)
+	    	{}*/
+		    fileChannel.close();
+		    dst.flip();
+	    }catch(IOException ex)
+    	{}
+    }while(val!=0);
+    java.util.Date date= new java.util.Date();
+    System.err.println(new Timestamp(date.getTime()) + "Finished waiting ");
+    
+}
 }
