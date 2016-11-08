@@ -33,6 +33,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.Files;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -1213,6 +1214,12 @@ private static void synchronize() {
 		
 		try { // The finally clause closes the channel and releases the lock
 			File lockfile = new File(name);
+			Path path = Paths.get(name);
+			if (Files.notExists(path)) {				 
+				System.err.println("Lock file doesn't exist. Exit from synchro.");
+				return;		    	
+			}
+			
 			file = new RandomAccessFile(lockfile, "rw");
 		    f = file.getChannel();
 		    lock = f.tryLock();
