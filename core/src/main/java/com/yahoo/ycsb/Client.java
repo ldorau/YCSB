@@ -1274,11 +1274,11 @@ private static void synchronize() {
 		    val = tmp[0];
 		    fileChannel.position(0);
 		//    System.err.println("Value read2 ="+(char)(tmp[0] + 0x30));
-		    /*try{
+		    try{
 	    		Thread.sleep(10);
 	    	}
 	    	catch(InterruptedException ex)
-	    	{}*/
+	    	{}
 		    fileChannel.close();
 		    dst.flip();
 	    }catch(IOException ex)
