@@ -27,6 +27,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.Reader;
+import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
@@ -57,6 +58,8 @@ import org.apache.htrace.core.HTraceConfiguration;
 import com.yahoo.ycsb.measurements.Measurements;
 import com.yahoo.ycsb.measurements.exporter.MeasurementsExporter;
 import com.yahoo.ycsb.measurements.exporter.TextMeasurementsExporter;
+
+import static java.lang.management.ManagementFactory.getRuntimeMXBean;
 
 /**
  * A thread to periodically show the status of the experiment, to reassure you that progress is being made.
@@ -1041,6 +1044,14 @@ public class Client
     //run the workload
 
     System.err.println("Starting test.");
+    System.err.println("PID " + getRuntimeMXBean().getName().split("@")[0]);
+    File file;
+    file = new File(String.format("/tmp/%s.pid", ManagementFactory.getRuntimeMXBean().getName().split("@")[0]));
+    try {
+        file.createNewFile();
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
     synchronize();
     final CountDownLatch completeLatch = new CountDownLatch(threadcount);
     final List<ClientThread> clients = new ArrayList<ClientThread>(threadcount);
