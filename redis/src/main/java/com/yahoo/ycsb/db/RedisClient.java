@@ -28,14 +28,14 @@ import com.yahoo.ycsb.ByteIterator;
 import com.yahoo.ycsb.DB;
 import com.yahoo.ycsb.DBException;
 import com.yahoo.ycsb.Status;
-import com.yahoo.ycsb.StringByteIterator;
+//import com.yahoo.ycsb.StringByteIterator;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+//import java.util.Iterator;
+//import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
@@ -95,7 +95,7 @@ public class RedisClient extends DB {
   @Override
   public Status read(String table, String key, Set<String> fields,
       HashMap<String, ByteIterator> result) {
-    if (fields == null) {
+    /*if (fields == null) {
       StringByteIterator.putAllAsByteIterators(result, jedis.hgetAll(key));
     } else {
       String[] fieldArray =
@@ -111,18 +111,31 @@ public class RedisClient extends DB {
       }
       assert !fieldIterator.hasNext() && !valueIterator.hasNext();
     }
-    return result.isEmpty() ? Status.ERROR : Status.OK;
+    return result.isEmpty() ? Status.ERROR : Status.OK;*/
+    //System.err.println("get " + key.toString());
+    jedis.get(key);
+    return Status.OK;
   }
 
   @Override
   public Status insert(String table, String key,
       HashMap<String, ByteIterator> values) {
-    if (jedis.hmset(key, StringByteIterator.getStringMap(values))
-        .equals("OK")) {
-      jedis.zadd(INDEX_KEY, hash(key), key);
-      return Status.OK;
-    }
-    return Status.ERROR;
+    /*if (jedis.hmset(key, StringByteIterator.getStringMap(values))
+        .equals("OK")) {*/
+      /*jedis.zadd(INDEX_KEY, hash(key), key);
+      System.err.println("insert " + key.toString());
+      System.err.println("value " + values[0].toString());
+      for (String keys: values.keySet()) {
+        System.out.println("key : " + keys);
+        System.out.println("value : " + values.get(keys));
+      }*/
+    String k= values.entrySet().iterator().next().getKey();
+//    System.err.println("insert " + key.toString() + " value " + k);
+    jedis.set(key, k);
+    return Status.OK;
+    //}
+    //System.err.println("insert error");
+    //return Status.ERROR;
   }
 
   @Override
@@ -134,8 +147,11 @@ public class RedisClient extends DB {
   @Override
   public Status update(String table, String key,
       HashMap<String, ByteIterator> values) {
-    return jedis.hmset(key, StringByteIterator.getStringMap(values))
-        .equals("OK") ? Status.OK : Status.ERROR;
+    //System.err.println("update " + key.toString());
+    String k= values.entrySet().iterator().next().getKey();
+    return jedis.set(key.toString(), k).equals("OK") ? Status.OK : Status.ERROR;
+    /*return jedis.hmset(key, StringByteIterator.getStringMap(values))
+        .equals("OK") ? Status.OK : Status.ERROR;*/
   }
 
   @Override
