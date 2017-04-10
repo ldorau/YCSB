@@ -37,6 +37,8 @@ import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+import com.mongodb.BasicDBObject;
+
 import com.yahoo.ycsb.ByteArrayByteIterator;
 import com.yahoo.ycsb.ByteIterator;
 import com.yahoo.ycsb.DB;
@@ -255,9 +257,14 @@ public class MongoDbClient extends DB {
     try {
       MongoCollection<Document> collection = database.getCollection(table);
       Document toInsert = new Document("_id", key);
-      for (Map.Entry<String, ByteIterator> entry : values.entrySet()) {
+      toInsert.put("key1", key+key+key+key+key+key+key);
+      toInsert.put("key2", key+key+key+key+key+key+key);
+      toInsert.put("key3", key+key+key+key+key+key+key);
+      toInsert.put("key4", key+key+key+key+key+key+key);
+      toInsert.put("key5", key+key+key+key+key+key+key);
+     /* for (Map.Entry<String, ByteIterator> entry : values.entrySet()) {
         toInsert.put(entry.getKey(), entry.getValue().toArray());
-      }
+      }*/
 
       if (batchSize == 1) {
         if (useUpsert) {
@@ -318,18 +325,35 @@ public class MongoDbClient extends DB {
       HashMap<String, ByteIterator> result) {
     try {
       MongoCollection<Document> collection = database.getCollection(table);
-      Document query = new Document("_id", key);
+//      Document query = new Document("_id", key);
+     // Document query = new Document("key", key);
+      
+      Document query = new Document("key1", key+key+key+key+key+key+key); 
+      query.put("key2", key+key+key+key+key+key+key);
+      query.put("key3", key+key+key+key+key+key+key);
+      query.put("key4", key+key+key+key+key+key+key);
+      query.put("key5", key+key+key+key+key+key+key);
+      
+      //FindIterable<Document> findIterable = collection.find(query);
+      BasicDBObject exc = new BasicDBObject(10);
 
-      FindIterable<Document> findIterable = collection.find(query);
+      exc.append("key1", true);
+      exc.append("key2", true);
+      exc.append("key3", true);
+      exc.append("key4", true);
+      exc.append("key5", true);
+      exc.append("_id", false);
 
-      if (fields != null) {
+      FindIterable<Document> findIterable = collection.find(query).projection(exc);
+
+   /*   if (fields != null) {
         Document projection = new Document();
         for (String field : fields) {
           projection.put(field, INCLUDE);
         }
         findIterable.projection(projection);
       }
-
+*/
       Document queryResult = findIterable.first();
 
       if (queryResult != null) {
