@@ -1218,7 +1218,7 @@ private static void synchronize() {
     ByteBuffer dst = ByteBuffer.allocate(1);
 	int num =0,val=0;
     byte[] tmp = new byte[1];
-    String name = new String("/var/lock/ycsb");
+    String name = new String("/var/lock/perf/ycsb");
     FileChannel fileChannel;
 	//Read and decrement value in lock file
     try{
@@ -1227,7 +1227,7 @@ private static void synchronize() {
 			File lockfile = new File(name);
 			Path path = Paths.get(name);
 			if (Files.notExists(path)) {				 
-				System.err.println("Lock file doesn't exist. Exit from synchro.");
+				System.err.println("Lock file '" + name + "' doesn't exist. Exit from synchro.");
 				return;		    	
 			}
 			
