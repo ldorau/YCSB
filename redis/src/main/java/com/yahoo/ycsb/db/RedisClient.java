@@ -129,9 +129,18 @@ public class RedisClient extends DB {
         System.out.println("key : " + keys);
         System.out.println("value : " + values.get(keys));
       }*/
-    String k= values.entrySet().iterator().next().getKey();
-//    System.err.println("insert " + key.toString() + " value " + k);
+    String hashkey = values.entrySet().iterator().next().getKey();
+    String sk = values.get(hashkey).toString();
+    String k = sk;
+    for (int i = 0; i < 9; i++) {
+      k += sk;
+    }
+    int size = k.getBytes().length;
     jedis.set(key, k);
+    if (size != 1000) {
+      System.err.println("ERROR: wrong size: insert: " + key.toString() + " value: " + k + " size: " + size);
+      return Status.ERROR;
+    }
     return Status.OK;
     //}
     //System.err.println("insert error");
