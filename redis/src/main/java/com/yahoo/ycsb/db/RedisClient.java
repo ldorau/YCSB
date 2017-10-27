@@ -135,9 +135,10 @@ public class RedisClient extends DB {
     for (int i = 0; i < 9; i++) {
       k += sk;
     }
+    k += "123456789012345678901234"; // 24 bytes for key
     int size = k.getBytes().length;
     jedis.set(key, k);
-    if (size != 1000) {
+    if (size != 1024) {
       System.err.println("ERROR: wrong size: insert: " + key.toString() + " value: " + k + " size: " + size);
       return Status.ERROR;
     }
