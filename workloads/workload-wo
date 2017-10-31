@@ -20,8 +20,8 @@
 
 workload=com.yahoo.ycsb.workloads.CoreWorkload
 
-recordcount=10
-operationcount=1000000
+recordcount=100
+operationcount=5000000
 
 readproportion=0
 insertproportion=1
